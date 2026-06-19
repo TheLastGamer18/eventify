@@ -1,100 +1,138 @@
 <div align="center">
 
-# Eventify
+# Eventify 🎟️
 
-A modern, full-stack event management platform designed for seamless event creation, discovery, and attendee engagement. Built with a focus on high-performance and a "brutalist" design aesthetic, it provides organizers with powerful tools to manage registrations, process payments, and engage their audience with real-time notifications.
+**A modern, full-stack event management platform with a bold "brutalist" design.**
 
-<p align="center">
-  <img src="https://img.shields.io/badge/downloads-12-brightgreen" alt="downloads">
-  <img src="https://img.shields.io/badge/release-v1.0.0-blue" alt="release">
-  <img src="https://img.shields.io/badge/last%20commit-may-yellow" alt="last commit">
-  <img src="https://img.shields.io/badge/stars-0-blue" alt="stars">
-  <img src="https://img.shields.io/badge/license-MIT-orange" alt="license">
-</p>
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com/)
 
-## Features
+[Report Bug](https://github.com/TheLastGamer18/eventify/issues) · [Request Feature](https://github.com/TheLastGamer18/eventify/issues)
 
 </div>
 
-- **Event Discovery**: Browse and search for upcoming events with a dynamic, responsive interface
-- **Event Creation & Management**: Comprehensive tools for organizers to design events, set occupancy limits, and manage registration workflows
-- **Advanced Analytics**: Dedicated dashboard for organizers to track attendee growth, revenue, and event performance
-- **Secure Payments**: Integrated with Razorpay for handling paid event registrations and ticket sales
-- **Real-time Notifications**: Native push notifications via OneSignal to keep attendees updated on event changes and reminders
-- **Automated Certificates**: Generate and download PDF participation certificates automatically upon event completion
-- **Secure Authentication**: Robust user authentication and session management powered by Better-Auth
-- **Brutalist UI**: A bold, high-contrast design system built with Tailwind CSS and Radix UI
+---
 
-<div align="center">
+## 📖 About The Project
 
-## How It Works
+Eventify is designed for seamless event creation, discovery, and attendee engagement. Built with a focus on high performance and a distinctive brutalist design aesthetic, it equips organizers with powerful tools to manage registrations, process payments securely, and engage audiences with real-time notifications.
 
-</div>
+### ⚡ Tech Stack
 
-1. Users and organizers authenticate securely using Better-Auth
-2. Organizers design events, set details, specify occupancy limits, and define pricing for tickets
-3. Attendees browse upcoming events and register or purchase tickets securely via Razorpay
-4. Real-time push notifications are dispatched to keep attendees informed leading up to the event
-5. Organizers track event performance and analytics through a dedicated dashboard
-6. Upon event completion, automated PDF participation certificates are generated for attendees
+- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) & [Radix UI](https://www.radix-ui.com/)
+- **Authentication**: [Better-Auth](https://better-auth.com/)
+- **Database**: PostgreSQL (via [Supabase](https://supabase.com/))
+- **Payments**: [Razorpay](https://razorpay.com/)
+- **Notifications**: [OneSignal](https://onesignal.com/)
+- **PDF Generation**: [@react-pdf/renderer](https://react-pdf.org/)
 
-<div align="center">
+---
 
-## Download or Visit
+## ✨ Features
 
-There are two ways to experience Eventify. You can either visit the live website or clone the repository to run it locally on your machine for development.
+- **Event Discovery**: Browse and search for upcoming events with a dynamic, responsive interface.
+- **Event Management**: Comprehensive tools for organizers to design events, set occupancy limits, and manage registration workflows (including manual approvals).
+- **Advanced Analytics**: Dedicated dashboards to track attendee growth, revenue, and event performance.
+- **Secure Payments**: Integrated Razorpay checkout for handling paid event registrations and ticket sales.
+- **Real-time Notifications**: Native push notifications via OneSignal to keep attendees updated on event changes and reminders.
+- **Automated Certificates**: Generate and download PDF participation certificates automatically upon event completion.
+- **Brutalist UI**: A bold, high-contrast design system that stands out.
 
-<p align="center">
-  <a href="https://github.com/TheLastGamer18/eventify">
-    <img src="https://img.shields.io/badge/CLONE_REPO-v1.0.0-1A73E8?style=for-the-badge" alt="Clone Repo" />
-  </a>
-  <a href="#">
-    <img src="https://img.shields.io/badge/VISIT_WEBSITE-00C853?style=for-the-badge" alt="Visit Website" />
-  </a>
-</p>
+---
 
-## Setup Instructions
+## 🚀 Getting Started
 
-To run Eventify locally on your machine, follow these steps:
+Follow these instructions to set up the project locally on your machine for development and testing.
 
-1. **Clone the repository:**
+### Prerequisites
+
+Ensure you have the following installed:
+- [Node.js](https://nodejs.org/) (v18 or higher recommended)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+- A [Supabase](https://supabase.com/) account for the database
+- A [Razorpay](https://razorpay.com/) account for payments
+- A [Better-Auth](https://better-auth.com/) supported database (Supabase works perfectly)
+
+### Installation
+
+1. **Clone the repository**
    ```bash
    git clone https://github.com/TheLastGamer18/eventify.git
    cd eventify
    ```
 
-2. **Install Dependencies:**
+2. **Install dependencies**
    ```bash
    npm install
+   # or
+   yarn install
+   # or
+   pnpm install
    ```
 
-3. **Environment Setup:**
-   - Copy the `.env.example` template to `.env`:
-     ```bash
-     cp .env.example .env
-     ```
-   - Open `.env` and fill in your API keys and configuration values for Supabase, Razorpay, OneSignal, Google Auth, and Better Auth.
+3. **Environment Setup**
+   Copy the example environment file to create your local environment:
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Open the `.env` file and fill in your keys:
 
-4. **Run the Development Server:**
+   | Variable | Description |
+   | :--- | :--- |
+   | `EVENT_DATABASE_URL` | Your PostgreSQL connection string (e.g., Supabase DB URI) |
+   | `BETTER_AUTH_SECRET` | A random 32-character string for securing sessions |
+   | `BETTER_AUTH_URL` | Base URL for auth (e.g., `http://localhost:3000/api/auth`) |
+   | `NEXT_PUBLIC_APP_URL` | Application base URL (`http://localhost:3000`) |
+   | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anonymous key |
+   | `GOOGLE_CLIENT_ID` | OAuth Client ID from Google Cloud Console |
+   | `GOOGLE_CLIENT_SECRET` | OAuth Client Secret from Google Cloud Console |
+   | `NEXT_PUBLIC_RAZORPAY_KEY_ID` | Razorpay Test/Live Key ID |
+   | `RAZORPAY_KEY_SECRET` | Razorpay Test/Live Key Secret |
+   | `NEXT_PUBLIC_ONESIGNAL_APP_ID` | OneSignal App ID for push notifications |
+   | `ONESIGNAL_REST_API_KEY` | OneSignal REST API Key |
+
+4. **Run the development server**
    ```bash
    npm run dev
    ```
 
-5. **Open the App:**
-   Visit `http://localhost:3000` in your browser.
+5. **Open the application**
+   Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Contributing
+---
 
-Contributions are welcome. Please check CONTRIBUTING.md for technical details and setup instructions.
+## 🤝 Contributing
 
-## Support
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-If you find this project useful, consider supporting the developer by starring the repository:
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-<p align="center">
+Please review our [Contributing Guidelines](CONTRIBUTING.md) for detailed technical instructions.
+
+---
+
+## 💖 Support & Acknowledgements
+
+If you find this project useful or it helped you learn something new, please consider giving it a ⭐! 
+
+<p align="left">
   <a href="https://github.com/TheLastGamer18/eventify">
     <img src="https://img.shields.io/badge/Star_This_Repo-FFD700?style=for-the-badge&logo=github&logoColor=black" alt="Star Repository" />
   </a>
 </p>
 
-</div>
+---
+
+## 📝 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
