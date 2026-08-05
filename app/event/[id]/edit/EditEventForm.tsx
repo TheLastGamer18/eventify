@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ImagePlus, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { updateEventAction } from "@/actions/events";
 import { useRouter } from "next/navigation";
 import type { Event } from "@/lib/db";
+import { ImageUploadField } from "@/components/ImageUploadField";
 
 interface EditEventFormProps {
     event: Event;
@@ -40,13 +41,8 @@ export const EditEventForm = ({ event }: EditEventFormProps) => {
 
     // Check if event has ended
     const isEventEnded = event.date ? (() => {
-        const eventDate = new Date(event.date); // YYYY-MM-DD
-        // Append time to make it specific, otherwise it's 00:00 UTC or Local depending on parsing
-        // Input type="date" value is YYYY-MM-DD.
-        // Let's construct a robust comparison.
         const endDateTimeString = `${event.date}T${event.endTime || "23:59"}`;
-        const endDateTime = new Date(endDateTimeString);
-        return new Date() > endDateTime;
+        return new Date() > new Date(endDateTimeString);
     })() : false;
 
 
@@ -99,59 +95,24 @@ export const EditEventForm = ({ event }: EditEventFormProps) => {
     return (
         <>
             <form onSubmit={handleSubmit} className="grid gap-8 md:grid-cols-[1fr_1.5fr]">
-                {/* Left — Upload Areas */}
+                {/* Left — Image fields */}
                 <div className="space-y-6">
-
-
-                    <div className="brutal-border brutal-shadow rounded-lg bg-card p-6 overflow-x-auto">
-                        <Label className="mb-3 block text-sm font-bold">Event Banner</Label>
-                        <div className="mb-2">
-                            <Input
-                                placeholder="Paste image URL here..."
-                                value={bannerUrl}
-                                onChange={(e) => setBannerUrl(e.target.value)}
-                                className={inputClass}
-                                disabled={isEventEnded}
-                            />
-                        </div>
-                        <div className="brutal-border flex h-48 flex-col items-center justify-center rounded-md border-dashed bg-secondary text-muted-foreground overflow-hidden relative min-w-[300px]">
-                            {bannerUrl ? (
-                                <img src={bannerUrl} alt="Banner Preview" className="w-full h-full object-cover" />
-                            ) : (
-                                <>
-                                    <ImagePlus size={36} className="mb-2" />
-                                    <span className="text-sm font-semibold">Preview will appear here</span>
-                                </>
-                            )}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-2">Paste a direct image link (e.g. from Unsplash)</p>
-                    </div>
-
-                    <div className="brutal-border brutal-shadow rounded-lg bg-card p-6 overflow-x-auto">
-                        <Label className="mb-3 block text-sm font-bold">Event Logo</Label>
-                        <div className="mb-2">
-                            <Input
-                                placeholder="Paste logo URL here..."
-                                value={logoUrl}
-                                onChange={(e) => setLogoUrl(e.target.value)}
-                                className={inputClass}
-                                disabled={isEventEnded}
-                            />
-                        </div>
-                        <div className="brutal-border flex h-[270px] w-full items-center justify-center rounded-md border-dashed bg-secondary/50 relative p-2 min-w-[300px]">
-                            <div className="brutal-border relative flex h-full aspect-square shrink-0 items-center justify-center overflow-hidden rounded-md bg-secondary text-muted-foreground">
-                                {logoUrl ? (
-                                    <img src={logoUrl} alt="Logo Preview" className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center text-muted-foreground">
-                                        <ImagePlus size={48} className="mb-2" />
-                                        <span className="text-lg font-bold">Preview</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-2">Paste a direct image link (e.g. from Unsplash)</p>
-                    </div>
+                    <ImageUploadField
+                        label="Event Banner"
+                        imageType="banner"
+                        value={bannerUrl}
+                        onChange={setBannerUrl}
+                        disabled={isEventEnded}
+                        variant="banner"
+                    />
+                    <ImageUploadField
+                        label="Event Logo"
+                        imageType="logo"
+                        value={logoUrl}
+                        onChange={setLogoUrl}
+                        disabled={isEventEnded}
+                        variant="logo"
+                    />
                 </div>
 
                 {/* Right — Form */}
