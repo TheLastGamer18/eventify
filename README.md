@@ -96,13 +96,14 @@ Ensure you have the following installed:
    | `RAZORPAY_KEY_SECRET` | Razorpay Test/Live Key Secret |
    | `NEXT_PUBLIC_ONESIGNAL_APP_ID` | OneSignal App ID for push notifications |
    | `ONESIGNAL_REST_API_KEY` | OneSignal REST API Key |
+   | `SUPABASE_SERVICE_ROLE_KEY` | Supabase Service Role Key |
 
-4. **Run the development server**
+5. **Run the development server**
    ```bash
    npm run dev
    ```
 
-5. **Open the application**
+6. **Open the application**
    Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
