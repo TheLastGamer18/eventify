@@ -160,7 +160,7 @@ const EventDetailClient = ({ event, user, registrationStatus, isOrganizer }: Eve
 
                 // 2. Open Razorpay Checkout
                 const options = {
-                    key: "rzp_test_bmAIujfHxGMYoe",
+                    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
                     amount: order.amount.toString(),
                     currency: order.currency,
                     name: "Eventify",
