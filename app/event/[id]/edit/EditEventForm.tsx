@@ -18,6 +18,7 @@ import { updateEventAction } from "@/actions/events";
 import { useRouter } from "next/navigation";
 import type { Event } from "@/lib/db";
 import { ImageUploadField } from "@/components/ImageUploadField";
+import { CertificateTemplatePicker } from "@/components/CertificateTemplatePicker";
 
 interface EditEventFormProps {
     event: Event;
@@ -35,9 +36,8 @@ export const EditEventForm = ({ event }: EditEventFormProps) => {
     const [bannerUrl, setBannerUrl] = useState(event.bannerUrl || "");
     const [logoUrl, setLogoUrl] = useState(event.logoUrl || "");
     const [certificateTemplate, setCertificateTemplate] = useState(event.certificateTemplate || "default");
+    const [certificateTextOffset, setCertificateTextOffset] = useState(event.certificateTextOffset ?? 0);
     const [enableCertificate, setEnableCertificate] = useState(event.enableCertificate !== undefined ? event.enableCertificate : true);
-
-    const templates = ["default", "template1", "template2", "template3"];
 
     // Check if event has ended
     const isEventEnded = event.date ? (() => {
@@ -72,6 +72,7 @@ export const EditEventForm = ({ event }: EditEventFormProps) => {
         if (bannerUrl) formData.set("bannerUrl", bannerUrl);
         if (logoUrl) formData.set("logoUrl", logoUrl);
         formData.set("certificateTemplate", certificateTemplate);
+        formData.set("certificateTextOffset", String(certificateTextOffset));
         formData.set("enableCertificate", String(enableCertificate));
 
         try {
@@ -81,7 +82,7 @@ export const EditEventForm = ({ event }: EditEventFormProps) => {
                 router.push(`/event/${event.id}`);
                 router.refresh();
             } else {
-                toast.error("Error", { description: "Failed to update event." });
+                toast.error("Error", { description: result.error || "Failed to update event." });
             }
         } catch (error) {
             toast.error("Error", { description: "Something went wrong." });
@@ -271,29 +272,13 @@ export const EditEventForm = ({ event }: EditEventFormProps) => {
                 <div className="mt-12 brutal-border brutal-shadow rounded-lg bg-card p-8">
                     <h2 className="mb-2 text-2xl font-black">Choose Certificate Design</h2>
                     <p className="mb-6 text-sm text-muted-foreground">The style selected will be used to generate a participation certificate upon event completion.</p>
-                    <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
-                        {templates.map((template) => (
-                            <div
-                                key={template}
-                                className={`cursor-pointer rounded-lg p-2 transition-all overflow-hidden ${certificateTemplate === template
-                                    ? "ring-4 ring-brutal-pink scale-105"
-                                    : "brutal-border hover:opacity-80 opacity-60"
-                                    }`}
-                                onClick={() => setCertificateTemplate(template)}
-                            >
-                                <div className="aspect-[1.414] w-full overflow-hidden rounded-md bg-secondary relative">
-                                    <img
-                                        src={`/certificates/${template}.png`}
-                                        alt={`${template} preview`}
-                                        className="h-full w-full object-cover"
-                                        onError={(e) => {
-                                            e.currentTarget.src = "https://placehold.co/600x400?text=Template+Preview";
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    <CertificateTemplatePicker
+                        value={certificateTemplate}
+                        onChange={setCertificateTemplate}
+                        textOffset={certificateTextOffset}
+                        onTextOffsetChange={setCertificateTextOffset}
+                        disabled={isEventEnded}
+                    />
                 </div>
             )}
         </>

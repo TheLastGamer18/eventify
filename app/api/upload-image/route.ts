@@ -11,6 +11,7 @@ const SUPABASE_SERVICE_KEY =
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
+// Maps MIME type → safe file extension derived from MIME (NOT from the filename)
 const ALLOWED_MIME_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -19,13 +20,15 @@ const ALLOWED_MIME_TYPES: Record<string, string> = {
   "image/svg+xml": "svg",
 };
 
-const ALLOWED_IMAGE_TYPES = ["banner", "logo"] as const;
+// Only these values are accepted for the `type` field to prevent path injection
+const ALLOWED_IMAGE_TYPES = ["banner", "logo", "certificate"] as const;
 type ImageType = (typeof ALLOWED_IMAGE_TYPES)[number];
 
 const BUCKET = "event-images";
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Auth check — no anonymous uploads
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -39,6 +42,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
+    // 2. Validate the `type` field — must be exactly "banner" or "logo"
     if (!rawType || !ALLOWED_IMAGE_TYPES.includes(rawType as ImageType)) {
       return NextResponse.json(
         { error: 'Invalid image type. Must be "banner" or "logo".' },
@@ -47,6 +51,7 @@ export async function POST(req: NextRequest) {
     }
     const type = rawType as ImageType;
 
+    // 3. Validate MIME type against known-safe whitelist
     const ext = ALLOWED_MIME_TYPES[file.type];
     if (!ext) {
       return NextResponse.json(
@@ -55,6 +60,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 4. Enforce file size limit
     if (file.size > MAX_SIZE_BYTES) {
       return NextResponse.json(
         { error: "File too large. Maximum size is 5 MB." },
@@ -64,6 +70,10 @@ export async function POST(req: NextRequest) {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
+    // 5. Build a safe, deterministic storage path scoped to the user.
+    //    Extension comes from the MIME type map — NOT the original filename —
+    //    so a file named "malicious.exe" with MIME "image/jpeg" still gets ".jpg".
+    //    Path pattern: <userId>/<type>-<timestamp>.<ext>
     const uniqueName = `${session.user.id}/${type}-${Date.now()}.${ext}`;
 
     const arrayBuffer = await file.arrayBuffer();

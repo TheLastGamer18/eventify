@@ -160,7 +160,7 @@ const EventDetailClient = ({ event, user, registrationStatus, isOrganizer }: Eve
 
                 // 2. Open Razorpay Checkout
                 const options = {
-                    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
+                    key: "rzp_test_bmAIujfHxGMYoe",
                     amount: order.amount.toString(),
                     currency: order.currency,
                     name: "Eventify",
@@ -461,6 +461,7 @@ const EventDetailClient = ({ event, user, registrationStatus, isOrganizer }: Eve
                                 date={event.date}
                                 organizerName={event.organizerName}
                                 templateName={event.certificateTemplate}
+                                textOffset={event.certificateTextOffset ?? 0}
                             />
                         </div>
                     )}

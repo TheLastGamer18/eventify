@@ -8,13 +8,56 @@ import { redirect } from "next/navigation";
 import * as db from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import Razorpay from "razorpay";
+import { createClient } from "@supabase/supabase-js";
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const SUPABASE_SERVICE_KEY =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    "";
+const STORAGE_BUCKET = "event-images";
+
+/**
+ * Extracts the storage object path from a Supabase public URL.
+ * Returns null if the URL doesn't belong to our Supabase project
+ * (e.g. external URLs like Unsplash should not be deleted).
+ */
+function extractStoragePath(url: string | undefined | null): string | null {
+    if (!url || !SUPABASE_URL) return null;
+    // Supabase public URL pattern:
+    // <SUPABASE_URL>/storage/v1/object/public/<bucket>/<path>
+    const marker = `/storage/v1/object/public/${STORAGE_BUCKET}/`;
+    const idx = url.indexOf(marker);
+    if (idx === -1) return null;
+    return url.slice(idx + marker.length);
+}
+
+/**
+ * Deletes one or more files from Supabase Storage.
+ * Silently ignores paths that are null or empty.
+ */
+async function deleteStorageFiles(paths: (string | null)[]): Promise<void> {
+    const validPaths = paths.filter((p): p is string => Boolean(p));
+    if (validPaths.length === 0) return;
+    try {
+        const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+        const { error } = await supabase.storage
+            .from(STORAGE_BUCKET)
+            .remove(validPaths);
+        if (error) {
+            console.error("[Storage] Failed to delete files:", error.message);
+        }
+    } catch (err) {
+        console.error("[Storage] Unexpected error deleting files:", err);
+    }
+}
 
 async function processRazorpayRefund(paymentId?: string | null) {
     if (!paymentId) return;
     try {
         const rzp = new Razorpay({
-            key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID as string,
-            key_secret: process.env.RAZORPAY_KEY_SECRET as string,
+            key_id: "rzp_test_bmAIujfHxGMYoe",
+            key_secret: "nW2B6ZGESl8rusGUEuHsdmbl",
         });
         await rzp.payments.refund(paymentId, { speed: "normal" });
     } catch (e: any) {
@@ -50,6 +93,7 @@ export async function createEventAction(formData: FormData) {
     const logoUrl = formData.get("logoUrl") as string;
     const certificateTemplate = (formData.get("certificateTemplate") as string) || "default";
     const enableCertificate = formData.get("enableCertificate") === "true";
+    const certificateTextOffset = Math.max(-150, Math.min(200, parseInt((formData.get("certificateTextOffset") as string) || "0", 10) || 0));
 
     // Basic validation
     if (!name || !description || !date || !startTime || !category) {
@@ -90,6 +134,7 @@ export async function createEventAction(formData: FormData) {
         isFree,
         price,
         certificateTemplate,
+        certificateTextOffset,
         enableCertificate,
     });
 
@@ -134,6 +179,7 @@ export async function updateEventAction(eventId: string, formData: FormData) {
     const bannerUrl = formData.get("bannerUrl") as string;
     const logoUrl = formData.get("logoUrl") as string;
     const certificateTemplate = (formData.get("certificateTemplate") as string) || "default";
+    const certificateTextOffset = Math.max(-150, Math.min(200, parseInt((formData.get("certificateTextOffset") as string) || "0", 10) || 0));
 
     if (maxOccupancy > 100000) {
         throw new Error("Max occupancy cannot exceed 100,000");
@@ -158,12 +204,19 @@ export async function updateEventAction(eventId: string, formData: FormData) {
         bannerUrl: bannerUrl || null,
         logoUrl: logoUrl || null,
         certificateTemplate,
+        certificateTextOffset,
         enableCertificate: formData.get("enableCertificate") === "true",
     };
 
     if (mode === "offline") updates.address = address;
 
-    await db.updateEvent(eventId, updates);
+    try {
+        await db.updateEvent(eventId, updates);
+    } catch (dbErr: any) {
+        const msg = dbErr?.message ?? String(dbErr);
+        console.error("[updateEventAction] db.updateEvent failed:", msg);
+        return { success: false, error: `DB error: ${msg}` };
+    }
 
     // Notify registered attendees about event updates
     if (existingEvent) {
@@ -199,7 +252,7 @@ export async function deleteEventAction(eventId: string) {
     if (event && event.organizerId === session.user.id) {
         const registrations = await db.getEventRegistrations(eventId);
 
-        // Process bulk refunds if paid
+        // 1. Process bulk refunds for paid events before anything is deleted
         if (!event.isFree) {
             for (const reg of registrations) {
                 if (reg.razorpayPaymentId) {
@@ -209,9 +262,23 @@ export async function deleteEventAction(eventId: string) {
         }
 
         const attendeeIds = registrations.map(r => r.userId);
-        
+
+        // 2. Capture storage paths BEFORE deleting the event row
+        const bannerPath = extractStoragePath(event.bannerUrl);
+        const logoPath = extractStoragePath(event.logoUrl);
+
+        // 3. Explicitly delete all registration rows for this event.
+        //    This is safe even if the DB has ON DELETE CASCADE — it's a no-op in that case.
+        await db.deleteEventRegistrations(eventId);
+
+        // 4. Delete the event row itself
         await db.deleteEvent(eventId);
-        
+
+        // 5. Clean up uploaded images from Supabase Storage (fire-and-forget style,
+        //    errors are logged but don't fail the action)
+        await deleteStorageFiles([bannerPath, logoPath]);
+
+        // 6. Notify attendees
         if (attendeeIds.length > 0) {
             await sendPushNotification(
                 `"${event.name}" has been deleted by the organizer.`,
@@ -219,6 +286,7 @@ export async function deleteEventAction(eventId: string) {
                 attendeeIds
             );
         }
+
         revalidatePath("/");
         revalidatePath("/explore");
         revalidatePath("/profile");

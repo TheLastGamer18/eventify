@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 80, // Adjust based on template clear area
-        paddingTop: 20,
+        // paddingTop is set dynamically below using textOffset
     },
     header: {
         fontSize: 48,
@@ -89,13 +89,6 @@ const styles = StyleSheet.create({
         fontFamily: 'Times-Roman',
         color: '#444',
     },
-    seal: {
-        width: 60,
-        height: 60,
-        // If we have a seal image, we'd use it. For now, empty or use a placeholder shape if needed.
-        // Assuming the background might have a seal spot, or we overlay one.
-        // Let's assume the user provided template acts as the border and we just place text.
-    }
 });
 
 interface CertificateProps {
@@ -104,12 +97,26 @@ interface CertificateProps {
     date: string;
     organizerName: string;
     templateName?: string;
+    /** Vertical offset in PDF points (+ve = down, -ve = up). Default: 0 */
+    textOffset?: number;
 }
 
-const CertificateTemplate = ({ userName, eventName, date, organizerName, templateName = "default" }: CertificateProps) => {
+const CertificateTemplate = ({
+    userName,
+    eventName,
+    date,
+    organizerName,
+    templateName = "default",
+    textOffset = 0,
+}: CertificateProps) => {
 
-    // Ensure we have a valid template name
-    const bgImage = `/certificates/${templateName}.png`;
+    // Support both built-in templates (local path) and user-uploaded URLs
+    const bgImage = templateName.startsWith("http")
+        ? templateName
+        : `/certificates/${templateName}.png`;
+
+    // Dynamic paddingTop = base 20pt + user offset
+    const dynamicPaddingTop = 20 + textOffset;
 
     return (
         <Document>
@@ -122,7 +129,7 @@ const CertificateTemplate = ({ userName, eventName, date, organizerName, templat
                 />
 
                 {/* Content Overlay */}
-                <View style={styles.contentAPI}>
+                <View style={[styles.contentAPI, { paddingTop: dynamicPaddingTop }]}>
                     {/* Spacing from top to align with typical certificate borders */}
                     <View style={{ height: 30 }} />
 

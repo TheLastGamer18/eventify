@@ -33,6 +33,7 @@ export type Event = {
     price?: number;
     registrationStatus?: string; // "pending", "confirmed", etc.
     certificateTemplate?: string;
+    certificateTextOffset?: number;
     enableCertificate: boolean;
     cancelled?: boolean;
 };
@@ -48,8 +49,8 @@ export async function createEvent(eventData: Omit<Event, "id" | "attendees">) {
       INSERT INTO events (
         name, description, date, start_time, end_time, address, max_occupancy, 
         require_approval, organizer_id, organizer_name, banner_color, mode, category, 
-        is_free, price, banner_url, logo_url, certificate_template, enable_certificate
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+        is_free, price, banner_url, logo_url, certificate_template, certificate_text_offset, enable_certificate
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
       RETURNING id
     `;
         const values = [
@@ -71,6 +72,7 @@ export async function createEvent(eventData: Omit<Event, "id" | "attendees">) {
             eventData.bannerUrl,
             eventData.logoUrl,
             eventData.certificateTemplate || 'default',
+            eventData.certificateTextOffset ?? 0,
             eventData.enableCertificate !== undefined ? eventData.enableCertificate : true,
         ];
         const res = await client.query(query, values);
@@ -177,6 +179,10 @@ export async function updateEvent(id: string, updates: Partial<Event>) {
 
     const res = await pool.query(query, values);
     return res.rows[0] ? mapDbEvent(res.rows[0]) : null;
+}
+
+export async function deleteEventRegistrations(eventId: string) {
+    await pool.query(`DELETE FROM registrations WHERE event_id = $1`, [eventId]);
 }
 
 export async function deleteEvent(id: string) {
@@ -427,6 +433,7 @@ function mapDbEvent(row: any): Event {
         price: row.price,
         registrationStatus: row.registration_status,
         certificateTemplate: row.certificate_template,
+        certificateTextOffset: row.certificate_text_offset ?? 0,
         enableCertificate: row.enable_certificate,
         cancelled: row.cancelled ?? false,
     };

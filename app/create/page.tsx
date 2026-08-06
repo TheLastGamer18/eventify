@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { ImageUploadField } from "@/components/ImageUploadField";
+import { CertificateTemplatePicker } from "@/components/CertificateTemplatePicker";
 
 const CreateEvent = () => {
   const router = useRouter();
@@ -32,6 +33,7 @@ const CreateEvent = () => {
   const [bannerUrl, setBannerUrl] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [certificateTemplate, setCertificateTemplate] = useState("default");
+  const [certificateTextOffset, setCertificateTextOffset] = useState(0);
   const [enableCertificate, setEnableCertificate] = useState(true);
 
   const templates = ["default", "template1", "template2", "template3"];
@@ -68,6 +70,7 @@ const CreateEvent = () => {
     if (bannerUrl) formData.set("bannerUrl", bannerUrl);
     if (logoUrl) formData.set("logoUrl", logoUrl);
     formData.set("certificateTemplate", certificateTemplate);
+    formData.set("certificateTextOffset", String(certificateTextOffset));
     formData.set("enableCertificate", String(enableCertificate));
 
     try {
@@ -260,29 +263,12 @@ const CreateEvent = () => {
         <div className="mt-12 brutal-border brutal-shadow rounded-lg bg-card p-8">
           <h2 className="mb-2 text-2xl font-black">Choose Certificate Design</h2>
           <p className="mb-6 text-sm text-muted-foreground">The style selected will be used to generate a participation certificate upon event completion.</p>
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
-            {templates.map((template) => (
-              <div
-                key={template}
-                className={`cursor-pointer rounded-lg p-2 transition-all overflow-hidden ${certificateTemplate === template
-                  ? "ring-4 ring-brutal-pink scale-105"
-                  : "brutal-border hover:opacity-80 opacity-60"
-                  }`}
-                onClick={() => setCertificateTemplate(template)}
-              >
-                <div className="aspect-[1.414] w-full overflow-hidden rounded-md bg-secondary relative">
-                  <img
-                    src={`/certificates/${template}.png`}
-                    alt={`${template} preview`}
-                    className="h-full w-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src = "https://placehold.co/600x400?text=Template+Preview";
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+          <CertificateTemplatePicker
+            value={certificateTemplate}
+            onChange={setCertificateTemplate}
+            textOffset={certificateTextOffset}
+            onTextOffsetChange={setCertificateTextOffset}
+          />
         </div>
       )}
     </main>

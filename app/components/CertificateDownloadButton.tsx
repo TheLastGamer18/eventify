@@ -10,9 +10,10 @@ interface CertificateDownloadButtonProps {
     date: string;
     organizerName: string;
     templateName?: string;
+    textOffset?: number;
 }
 
-const CertificateDownloadButton = ({ userName, eventName, date, organizerName, templateName }: CertificateDownloadButtonProps) => {
+const CertificateDownloadButton = ({ userName, eventName, date, organizerName, templateName, textOffset = 0 }: CertificateDownloadButtonProps) => {
     return (
         <PDFDownloadLink
             document={
@@ -22,6 +23,7 @@ const CertificateDownloadButton = ({ userName, eventName, date, organizerName, t
                     date={date}
                     organizerName={organizerName}
                     templateName={templateName}
+                    textOffset={textOffset}
                 />
             }
             fileName={`${eventName.replace(/\s+/g, '_')}_Certificate.pdf`}

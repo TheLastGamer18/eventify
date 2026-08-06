@@ -15,13 +15,15 @@ function isSupabaseStorageUrl(url: string): boolean {
 
 interface ImageUploadFieldProps {
   label: string;
-  /** "banner" or "logo" — passed to /api/upload-image as the `type` field */
-  imageType: "banner" | "logo";
+  /** "banner", "logo", or "certificate" — passed to /api/upload-image as the `type` field */
+  imageType: "banner" | "logo" | "certificate";
   value: string;
   onChange: (url: string) => void;
   disabled?: boolean;
   /** For banner: "h-48" aspect. For logo: square inside h-[270px] container */
   variant: "banner" | "logo";
+  /** When true, hides the image preview area (useful when the parent provides its own preview) */
+  hidePreview?: boolean;
 }
 
 const inputClass =
@@ -34,6 +36,7 @@ export function ImageUploadField({
   onChange,
   disabled = false,
   variant,
+  hidePreview = false,
 }: ImageUploadFieldProps) {
   // Auto-detect mode based on the initial value:
   // If the URL is a Supabase storage URL → it was previously uploaded → show "file" tab
@@ -159,8 +162,8 @@ export function ImageUploadField({
         </div>
       )}
 
-      {/* Preview */}
-      {variant === "banner" ? (
+      {/* Preview — hidden when parent provides its own (e.g. CertificateTemplatePicker) */}
+      {!hidePreview && variant === "banner" ? (
         <div className={containerClass}>
           {uploading ? (
             <div className="flex flex-col items-center gap-2">
@@ -176,7 +179,7 @@ export function ImageUploadField({
             </>
           )}
         </div>
-      ) : (
+      ) : !hidePreview ? (
         <div className={containerClass}>
           <div className="brutal-border relative flex h-full aspect-square shrink-0 items-center justify-center overflow-hidden rounded-md bg-secondary text-muted-foreground">
             {uploading ? (
@@ -194,13 +197,15 @@ export function ImageUploadField({
             )}
           </div>
         </div>
-      )}
+      ) : null}
 
-      <p className="text-xs text-muted-foreground mt-2">
-        {mode === "url"
-          ? "Paste a direct image link (e.g. from Unsplash)"
-          : "JPEG, PNG, WebP, GIF or SVG · Max 5 MB"}
-      </p>
+      {!hidePreview && (
+        <p className="text-xs text-muted-foreground mt-2">
+          {mode === "url"
+            ? "Paste a direct image link (e.g. from Unsplash)"
+            : "JPEG, PNG, WebP, GIF or SVG · Max 5 MB"}
+        </p>
+      )}
     </div>
   );
 }
